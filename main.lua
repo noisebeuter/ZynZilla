@@ -244,7 +244,6 @@ function operate(int_wave,real_x)
 
     for int_multiplier = 1, int_multipliers_per_wave do
       local real_phase = real_x
-      --local multiplier = multipliers[int_multiplier]
       local real_multiplier
 
       if multipliers[int_multiplier] then
@@ -253,16 +252,14 @@ function operate(int_wave,real_x)
         real_multiplier = 0.0
       end
 
-      --if real_multiplier ~= 0.0 then
-        real_phase = math.fmod(real_phase * int_multiplier,1.0) 
+      real_phase = math.fmod(real_phase * int_multiplier,1.0) 
 
-        real_operator_value = real_operator_value +
-          array_function_operators[array_waves[int_wave]](
-            real_amplitude * real_multiplier * real_amplitude_factor,
-            variant_parameter,
-            real_phase
-          )
-      --end
+      real_operator_value = real_operator_value +
+        array_function_operators[array_waves[int_wave]](
+          real_amplitude * real_multiplier * real_amplitude_factor,
+          variant_parameter,
+          real_phase
+        )
 
     end
   else

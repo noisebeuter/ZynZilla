@@ -78,8 +78,6 @@ function change_tab(int_operator_number)
   local real_amplitude = array_real_amplitudes[int_operator_number]
   local real_width = array_variant_parameters[int_operator_number]
   local int_wave_type = array_waves[int_operator_number]
-  --local real_frequency_multiplier = 
-  --  array_real_frequency_multipliers[int_operator_number]
 
   int_wave_type_selected = int_wave_type
 
@@ -100,9 +98,6 @@ function change_tab(int_operator_number)
   end
   
   vb.views.cmbWave.value = int_wave_type_selected
-  --vb.views.txtMultiplier.value = real_frequency_multiplier
-
-  --vb.views.rowFrequencyMultipliers = create_operator_gui()
   
   show_operator_parameters(int_wave_type)
 
@@ -431,10 +426,7 @@ local function create_multipliers_gui()
 
   local default_value = 0.0
 
-  --array_real_frequency_multipliers[int_operator_selected] = {}
-
   for int_multiplier = 1, int_multipliers_per_wave do
-    --array_real_frequency_multipliers[int_operator_selected][int_multiplier] = default_value
     local minislider = vb:minislider {
       width = 12,
       height = 100,
