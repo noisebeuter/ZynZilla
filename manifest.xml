@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RenoiseScriptingTool>
+  <ApiVersion>1.0</ApiVersion>
+  <Id>com.noisebeuter.ZynZilla</Id>
+  <Version>0.1</Version>
+  <Name>Oscillator Editor</Name>
+  <Author>Marco Süß + Fabio Napodano | It-Alien (it-alien@renoise.com)</Author>
+  <Description>A sample generator which allows you to create complex new short, looped samples, using up to 6 oscillators and oscillator modulation. Creates a menu entry 'Generate Custom Wave' in the sample editor's context menu (right click on an empty sample wave form).</Description>
+  <Category>Sample Editor</Category>
+  <Homepage>http://tools.renoise.com</Homepage>
+</RenoiseScriptingTool>
+
