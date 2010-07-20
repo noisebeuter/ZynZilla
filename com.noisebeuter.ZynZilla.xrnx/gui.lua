@@ -436,8 +436,7 @@ end
 
 local function create_multipliers_gui()
   local row_frequency_multipliers = vb:row {
-    id = "rowFrequencyMultipliers",
-    style = "group"
+    id = "rowFrequencyMultipliers"
   }
 
   local default_value = 0.0
@@ -450,13 +449,13 @@ local function create_multipliers_gui()
     array_string_buttons[int_tabnum] = tostring(int_tabnum)
   end
 
-  row_frequency_multipliers:add_child(vb:switch {
+  local tab_switch = vb:switch {
     width = CONTENT_WIDTH,
     items = array_string_buttons,
     notifier = function(int_index_new)
       change_multipliers_tab(int_index_new)
     end
-  })
+  }
 
   for int_multiplier = 1, int_multipliers_per_tab do
     local minislider = vb:minislider {
@@ -490,7 +489,19 @@ local function create_multipliers_gui()
     })
   end
 
-  return row_frequency_multipliers
+  return vb:column {
+    style = "group",
+    margin = MARGIN_DEFAULT,
+    vb:row {
+      vb:text {
+        width = 552,
+        text = "Harmonics"
+      },
+      vb:text { text = "Page: " },
+      tab_switch
+    },
+    row_frequency_multipliers
+  }
 end
 
 --------------------------------------------------------------------------------
