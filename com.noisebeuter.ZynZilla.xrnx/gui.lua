@@ -503,7 +503,7 @@ local function create_multipliers_gui()
         array_real_frequency_multipliers[int_operator_selected][idx] = new_value
         renoise.app():show_status(
           "Harmonic #" .. tostring(idx) ..
-          " value: " .. string.format("%1.2f", new_value)
+          " amplitude: " .. string.format("%1.2f", new_value)
         )
         if new_value == 0 then
           button_reset_amplitude.color = {0,0,0}
@@ -537,7 +537,7 @@ local function create_multipliers_gui()
         array_real_phase_shift[int_operator_selected][idx] = new_value
         renoise.app():show_status(
           "Phase shift of harmonic #" .. tostring(idx) ..
-          " value: " .. string.format("%1.2f", new_value)
+          " value: " .. tostring(new_value * 360) .. "°"
         )
         if new_value == 0 then
           button_reset_phase_shift.color = {0,0,0}
