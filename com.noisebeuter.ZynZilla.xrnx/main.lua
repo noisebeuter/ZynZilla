@@ -13,8 +13,12 @@ OPERATORS = 6
 WAVE_NONE = 1
 WAVE_ARCCOSINE = WAVE_NONE + 1
 WAVE_ARCSINE = WAVE_ARCCOSINE + 1
-WAVE_COSINE = WAVE_ARCSINE + 1
-WAVE_NOISE = WAVE_COSINE + 1
+WAVE_CHEBYSHEV = WAVE_ARCSINE + 1
+WAVE_CHIRP = WAVE_CHEBYSHEV + 1
+WAVE_COSINE = WAVE_CHIRP + 1
+WAVE_DIODE = WAVE_COSINE + 1
+WAVE_GAUSS = WAVE_DIODE + 1
+WAVE_NOISE = WAVE_GAUSS + 1
 WAVE_PULSE = WAVE_NOISE + 1
 WAVE_SAW = WAVE_PULSE + 1
 WAVE_SINE =WAVE_SAW + 1
@@ -23,11 +27,6 @@ WAVE_TANGENT = WAVE_SQUARE + 1
 WAVE_TRIANGLE = WAVE_TANGENT + 1
 WAVE_WAVETABLE = WAVE_TRIANGLE + 1
 WAVE_NUMBER = WAVE_WAVETABLE
-
-WAVE_GAUSS = WAVE_WAVETABLE + 1
-WAVE_DIODE = WAVE_GAUSS + 1
-WAVE_CHIRP = WAVE_DIODE + 1
-WAVE_CHEBYSHEV = WAVE_CHIRP + 1
 
 EPSILON = 1e-12
 MINUSINFDB = -200.0
@@ -64,7 +63,11 @@ array_string_operators =
   "-NONE-",
   "Arc Cosine", 
   "Arc Sine", 
+  "Chebyshev",
+  "Chirp",
   "Cosine", 
+  "Diode",
+  "Gauss",
   "Noise", 
   "Pulse", 
   "Saw", 
@@ -72,11 +75,7 @@ array_string_operators =
   "Square", 
   "Tangent",
   "Triangle", 
-  "Wave",
-  "Gauss",
-  "Diode",
-  "Chirp",
-  "Chebyshev"
+  "Wave"
 }
   
 array_function_operators = 
@@ -84,7 +83,11 @@ array_function_operators =
   none,
   arccosine,
   arcsine,
+  chebyshev,
+  chirp,
   cosine,
+  diode,
+  gauss,
   noise,
   pulse,
   saw,
@@ -92,11 +95,7 @@ array_function_operators =
   square,
   tangent,
   triangle,
-  wave,
-  gauss,
-  diode,
-  chirp,
-  chebyshev
+  wave
 }
   
 array_real_amplitudes = {}

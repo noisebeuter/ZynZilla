@@ -471,6 +471,10 @@ local function create_multipliers_gui()
           array_real_frequency_multipliers[int_operator_selected] = {}
         end
         array_real_frequency_multipliers[int_operator_selected][idx] = new_value
+        renoise.app():show_status(
+          "Harmonic #" .. tostring(int_multiplier) ..
+          " value: " .. string.format("%1.2f", new_value)
+        )
       end
     }
     array_minislider_multipliers[int_multiplier] = minislider
