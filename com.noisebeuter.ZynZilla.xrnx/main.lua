@@ -227,9 +227,9 @@ function operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_inde
     local multipliers = array_real_frequency_multipliers[int_wave]
 
     for _, int_multiplier in ipairs(array_int_multiplier_indexes) do
-      local real_phase = real_x
-      local real_multiplier = array_real_frequency_multipliers[int_wave][int_multiplier]
       local real_phase_shift = array_real_phase_shift[int_wave][int_multiplier]
+      local real_phase = real_x + real_phase_shift
+      local real_multiplier = array_real_frequency_multipliers[int_wave][int_multiplier]
 
       real_phase = math.fmod(real_phase * int_multiplier,1.0) 
 
@@ -237,7 +237,7 @@ function operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_inde
         array_function_operators[array_waves[int_wave]](
           real_amplitude * real_multiplier * real_amplitude_factor,
           variant_parameter,
-          real_phase + real_phase_shift
+          real_phase
         )
 
     end
