@@ -543,7 +543,7 @@ local function create_multipliers_gui()
       vb:text {
         width = 552,
         font = "bold",
-        text = "Harmonics"
+        text = "Harmonics and phases"
       },
       vb:text { text = "Page: " },
       tab_switch
