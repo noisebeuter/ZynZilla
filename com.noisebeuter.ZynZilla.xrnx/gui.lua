@@ -518,7 +518,7 @@ local function create_multipliers_gui()
         vb:button {
           width = 12,
           height = 12,
-          tooltip = string.format("Reset #%02i", int_multiplier),
+          tooltip = "Reset amplitude of this harmonic to 0",
           pressed = function()
             minislider.value = 0.0
           end
@@ -528,7 +528,7 @@ local function create_multipliers_gui()
       vb:button {
         width = 12,
         height = 12,
-        tooltip = string.format("Reset phase shift #%02i", int_multiplier),
+        tooltip = "Reset phase shift of this harmonic to 0",
         pressed = function()
           minislider_phase_shift.value = 0.0
         end
