@@ -110,7 +110,9 @@ function change_tab(int_operator_number)
 
   int_wave_type_selected = int_wave_type
 
-  vb.views.txtOperator.text = "Operator " .. tostring(int_operator_number)  
+  vb.views.txtOperator.text =
+    "Operator " .. tostring(int_operator_number) .. " base waveform" 
+
   vb.views.sldAmplitude.value = real_amplitude
   
   if int_wave_type ~= WAVE_WAVETABLE then
@@ -477,7 +479,16 @@ local function create_multipliers_gui()
   }
 
   for int_multiplier = 1, int_multipliers_per_tab do
-    local minislider = vb:minislider {
+    local minislider
+    local button_reset_amplitude = vb:button {
+      width = 12,
+      height = 12,
+      tooltip = "Reset amplitude of this harmonic to 0",
+      pressed = function()
+        minislider.value = 0.0
+      end
+    }
+    minislider = vb:minislider {
       width = 12,
       height = 100,
       value = default_value,
@@ -494,11 +505,25 @@ local function create_multipliers_gui()
           "Harmonic #" .. tostring(idx) ..
           " value: " .. string.format("%1.2f", new_value)
         )
+        if new_value == 0 then
+          button_reset_amplitude.color = {0,0,0}
+        else
+          button_reset_amplitude.color = {0x88,0x88,0x88}
+        end
       end
     }
     array_minislider_multipliers[int_multiplier] = minislider
 
-    local minislider_phase_shift = vb:minislider {
+    local minislider_phase_shift; 
+    local button_reset_phase_shift = vb:button {
+      width = 12,
+      height = 12,
+      tooltip = "Reset phase shift of this harmonic to 0",
+      pressed = function()
+        minislider_phase_shift.value = 0.0
+      end
+    }
+    minislider_phase_shift = vb:minislider {
       width = 12,
       height = 50,
       value = 0,
@@ -514,6 +539,11 @@ local function create_multipliers_gui()
           "Phase shift of harmonic #" .. tostring(idx) ..
           " value: " .. string.format("%1.2f", new_value)
         )
+        if new_value == 0 then
+          button_reset_phase_shift.color = {0,0,0}
+        else
+          button_reset_phase_shift.color = {0x88,0x88,0x88}
+        end
       end
     }
     array_minislider_phase_shift[int_multiplier] = minislider_phase_shift
@@ -521,24 +551,10 @@ local function create_multipliers_gui()
     row_frequency_multipliers:add_child(vb:column {
       vb:row { minislider },
       vb:row {
-        vb:button {
-          width = 12,
-          height = 12,
-          tooltip = "Reset amplitude of this harmonic to 0",
-          pressed = function()
-            minislider.value = 0.0
-          end
-        }
+        button_reset_amplitude
       },
       minislider_phase_shift,
-      vb:button {
-        width = 12,
-        height = 12,
-        tooltip = "Reset phase shift of this harmonic to 0",
-        pressed = function()
-          minislider_phase_shift.value = 0.0
-        end
-      }
+      button_reset_phase_shift
     })
   end
 
