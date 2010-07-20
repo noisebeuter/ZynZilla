@@ -459,11 +459,14 @@ local function create_multipliers_gui()
   local array_string_buttons = {}
 
   for int_tabnum = 1, int_tabs do
-    array_string_buttons[int_tabnum] = tostring(int_tabnum)
+    local end_harmonic = int_tabnum * int_multipliers_per_tab
+    local start_harmonic = end_harmonic - int_multipliers_per_tab + 1
+    array_string_buttons[int_tabnum] =
+      tostring(start_harmonic) .. "-" .. tostring(end_harmonic)
   end
 
   local tab_switch = vb:switch {
-    width = CONTENT_WIDTH,
+    width = CONTENT_WIDTH + 20,
     items = array_string_buttons,
     notifier = function(int_index_new)
       change_multipliers_tab(int_index_new)
@@ -541,7 +544,7 @@ local function create_multipliers_gui()
     margin = MARGIN_DEFAULT,
     vb:row {
       vb:text {
-        width = 552,
+        width = 532,
         font = "bold",
         text = "Harmonics and phases"
       },
