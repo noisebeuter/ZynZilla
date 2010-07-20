@@ -79,6 +79,17 @@ local function update_multipliers_sliders()
 
     array_minislider_multipliers[int_multiplier].tooltip = string.format("%03i", idx)
     array_minislider_multipliers[int_multiplier].value = real_multiplier
+
+    local phase_shifts = array_real_phase_shift[int_operator_selected]
+    local real_phase_shift = phase_shifts[idx]
+    if real_phase_shift == nil then
+      real_phase_shift = 0
+    end
+
+    array_minislider_phase_shift[int_multiplier].tooltip =
+      string.format("Phase shift for %03i", idx)
+
+    array_minislider_phase_shift[int_multiplier].value = real_phase_shift
   end
 end
 
@@ -283,6 +294,7 @@ function reset_gui()
   array_boolean_inverts = {}
   array_int_modulators = {}
   array_real_frequency_multipliers = {}
+  array_real_phase_shift = {}
   array_waves = {}
   int_note = 58
   real_amplification = 1.0
@@ -293,6 +305,7 @@ function reset_gui()
 
   for int_multiplier = 1, int_multipliers_per_tab do
     array_minislider_multipliers[int_multiplier].value = 0.0
+    array_minislider_phase_shift[int_multiplier].value = 0.0
   end
 
   change_wave(1,WAVE_SINE)
@@ -478,6 +491,27 @@ local function create_multipliers_gui()
       end
     }
     array_minislider_multipliers[int_multiplier] = minislider
+
+    local minislider_phase_shift = vb:minislider {
+      width = 12,
+      height = 50,
+      value = 0,
+      min = -0.5,
+      max = 0.5,
+      notifier = function(new_value)
+        local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
+        if array_real_phase_shift[int_operator_selected] == nil then
+          array_real_phase_shift[int_operator_selected] = {}
+        end
+        array_real_phase_shift[int_operator_selected][idx] = new_value
+        renoise.app():show_status(
+          "Phase shift of harmonic #" .. tostring(idx) ..
+          " value: " .. string.format("%1.2f", new_value)
+        )
+      end
+    }
+    array_minislider_phase_shift[int_multiplier] = minislider_phase_shift
+
     row_frequency_multipliers:add_child(vb:column {
       vb:row { minislider },
       vb:row {
@@ -489,6 +523,15 @@ local function create_multipliers_gui()
             minislider.value = 0.0
           end
         }
+      },
+      minislider_phase_shift,
+      vb:button {
+        width = 12,
+        height = 12,
+        tooltip = string.format("Reset phase shift #%02i", int_multiplier),
+        pressed = function()
+          minislider_phase_shift.value = 0.0
+        end
       }
     })
   end

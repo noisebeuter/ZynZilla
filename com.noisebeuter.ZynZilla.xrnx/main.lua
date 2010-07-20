@@ -105,8 +105,10 @@ array_sample_number = {} -- to be used with WAVE operator
 array_boolean_inverts = {}
 array_int_modulators = {}
 array_real_frequency_multipliers = {}
+array_real_phase_shift = {}
 array_waves = {}
 array_minislider_multipliers = {}
+array_minislider_phase_shift = {}
 
 int_multipliers_per_wave = 256
 int_multipliers_per_tab = 64
@@ -177,10 +179,10 @@ function initialize_wave(int_wave_number)
   array_variant_parameters[int_wave_number] = 0.5
   array_boolean_inverts[int_wave_number] = false
   array_real_frequency_multipliers[int_wave_number] = {}
+  array_real_phase_shift[int_wave_number] = {}
   array_int_modulators[int_wave_number] = 0
   array_instrument_number[int_wave_number] = 0
   array_sample_number[int_wave_number] = 0
-  --array_minislider_multipliers[int_wave_number] = {}
 end
 
 
@@ -227,6 +229,7 @@ function operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_inde
     for _, int_multiplier in ipairs(array_int_multiplier_indexes) do
       local real_phase = real_x
       local real_multiplier = array_real_frequency_multipliers[int_wave][int_multiplier]
+      local real_phase_shift = array_real_phase_shift[int_wave][int_multiplier]
 
       real_phase = math.fmod(real_phase * int_multiplier,1.0) 
 
@@ -234,7 +237,7 @@ function operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_inde
         array_function_operators[array_waves[int_wave]](
           real_amplitude * real_multiplier * real_amplitude_factor,
           variant_parameter,
-          real_phase
+          real_phase + real_phase_shift
         )
 
     end
@@ -301,6 +304,9 @@ function process_data(real_amplification,real_x)
 
       if real_multiplier_amplitude ~= 0.0 then
         table.insert(array_int_multiplier_indexes, int_multiplier)
+        if array_real_phase_shift[int_wave][int_multiplier] == nil then
+          array_real_phase_shift[int_wave][int_multiplier] = 0
+        end
       end
     end
 
