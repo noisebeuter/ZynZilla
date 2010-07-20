@@ -96,7 +96,9 @@ array_real_frequency_multipliers = {}
 array_waves = {}
 array_minislider_multipliers = {}
 
-int_multipliers_per_wave = 64
+int_multipliers_per_wave = 256
+int_multipliers_per_tab = 64
+int_multipliers_tab = 1
 
 
 --------------------------------------------------------------------------------
@@ -213,11 +215,11 @@ function operate(int_wave,real_x)
   local real_amplitude = array_real_amplitudes[int_wave]
   local variant_parameter = array_variant_parameters[int_wave]
 
-  renoise.app():show_status("Operating")
+  --renoise.app():show_status("Operating")
   
   local real_operator_value = 0
   if array_waves[int_wave] then  
-    renoise.app():show_status(string.format("Rendering wave %01i", int_wave))
+    --renoise.app():show_status(string.format("Rendering wave %01i", int_wave))
     local multipliers = array_real_frequency_multipliers[int_wave]
 
     local real_sum_multiplier_amplitudes = 0.0
@@ -240,7 +242,7 @@ function operate(int_wave,real_x)
 
     local real_amplitude_factor = real_amplitude / real_sum_multiplier_amplitudes
 
-    renoise.app():show_status(string.format("Amplitude factor: %9f", real_amplitude_factor))
+    --renoise.app():show_status(string.format("Amplitude factor: %9f", real_amplitude_factor))
 
     for int_multiplier = 1, int_multipliers_per_wave do
       local real_phase = real_x
@@ -252,14 +254,16 @@ function operate(int_wave,real_x)
         real_multiplier = 0.0
       end
 
-      real_phase = math.fmod(real_phase * int_multiplier,1.0) 
+      if real_multiplier ~= 0.0 then
+        real_phase = math.fmod(real_phase * int_multiplier,1.0) 
 
-      real_operator_value = real_operator_value +
-        array_function_operators[array_waves[int_wave]](
-          real_amplitude * real_multiplier * real_amplitude_factor,
-          variant_parameter,
-          real_phase
-        )
+        real_operator_value = real_operator_value +
+          array_function_operators[array_waves[int_wave]](
+            real_amplitude * real_multiplier * real_amplitude_factor,
+            variant_parameter,
+            real_phase
+          )
+      end
 
     end
   else

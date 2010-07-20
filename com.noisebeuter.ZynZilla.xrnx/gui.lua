@@ -67,6 +67,22 @@ end
 
 --------------------------------------------------------------------------------
 
+local function update_multipliers_sliders()
+  for int_multiplier = 1, int_multipliers_per_tab do
+    local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
+    local real_multiplier = array_real_frequency_multipliers[int_operator_selected][idx]
+    if real_multiplier == nil then
+      real_multiplier = 0.0
+    end
+
+    array_minislider_multipliers[int_multiplier].tooltip = string.format("%03i", idx)
+    array_minislider_multipliers[int_multiplier].value = real_multiplier
+  end
+end
+
+
+--------------------------------------------------------------------------------
+
 function change_tab(int_operator_number)
 
   int_operator_selected = int_operator_number
@@ -101,14 +117,7 @@ function change_tab(int_operator_number)
   
   show_operator_parameters(int_wave_type)
 
-  for int_multiplier = 1, int_multipliers_per_wave do
-    local real_multiplier = array_real_frequency_multipliers[int_operator_selected][int_multiplier]
-    if real_multiplier == nil then
-      real_multiplier = 0.0
-    end
-
-    array_minislider_multipliers[int_multiplier].value = real_multiplier
-  end
+  update_multipliers_sliders()
 
   vb.views.cmbModulate.items = generate_modulator_matrix()
   if array_int_modulators[int_operator_number] then
@@ -280,7 +289,7 @@ function reset_gui()
   vb.views.switchTabs.value = 1
   vb.views.chkInvert.value = false
 
-  for int_multiplier = 1, int_multipliers_per_wave do
+  for int_multiplier = 1, int_multipliers_per_tab do
     array_minislider_multipliers[int_multiplier].value = 0.0
   end
 
@@ -418,6 +427,11 @@ end
 
 --------------------------------------------------------------------------------
 
+local function change_multipliers_tab(int_index_new)
+  int_multipliers_tab = int_index_new
+  update_multipliers_sliders()
+end
+
 local function create_multipliers_gui()
   local row_frequency_multipliers = vb:row {
     id = "rowFrequencyMultipliers",
@@ -426,7 +440,23 @@ local function create_multipliers_gui()
 
   local default_value = 0.0
 
-  for int_multiplier = 1, int_multipliers_per_wave do
+  local int_tabs = math.ceil(int_multipliers_per_wave / int_multipliers_per_tab)
+
+  local array_string_buttons = {}
+
+  for int_tabnum = 1, int_tabs do
+    array_string_buttons[int_tabnum] = tostring(int_tabnum)
+  end
+
+  row_frequency_multipliers:add_child(vb:switch {
+    width = CONTENT_WIDTH,
+    items = array_string_buttons,
+    notifier = function(int_index_new)
+      change_multipliers_tab(int_index_new)
+    end
+  })
+
+  for int_multiplier = 1, int_multipliers_per_tab do
     local minislider = vb:minislider {
       width = 12,
       height = 100,
@@ -435,10 +465,11 @@ local function create_multipliers_gui()
       max = 1.0,
       tooltip = string.format("%02i", int_multiplier),
       notifier = function(new_value)
+        local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
         if array_real_frequency_multipliers[int_operator_selected] == nil then
           array_real_frequency_multipliers[int_operator_selected] = {}
         end
-        array_real_frequency_multipliers[int_operator_selected][int_multiplier] = new_value
+        array_real_frequency_multipliers[int_operator_selected][idx] = new_value
       end
     }
     array_minislider_multipliers[int_multiplier] = minislider
