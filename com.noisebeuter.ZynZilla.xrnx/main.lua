@@ -203,67 +203,27 @@ end
 
 --------------------------------------------------------------------------------
 
-function operate(int_wave,real_x)
-
-  --local real_phase = real_x
-
-  --if  array_real_frequency_multipliers[int_wave] then 
-  --  real_phase = 
-  --    math.fmod(real_phase * array_real_frequency_multipliers[int_wave],1.0) 
-  --end
+function operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_indexes)
 
   local real_amplitude = array_real_amplitudes[int_wave]
   local variant_parameter = array_variant_parameters[int_wave]
 
-  --renoise.app():show_status("Operating")
-  
   local real_operator_value = 0
   if array_waves[int_wave] then  
-    --renoise.app():show_status(string.format("Rendering wave %01i", int_wave))
     local multipliers = array_real_frequency_multipliers[int_wave]
 
-    local real_sum_multiplier_amplitudes = 0.0
-
-    for int_multiplier = 1, int_multipliers_per_wave do
-      local real_multiplier_amplitude
-
-      if multipliers[int_multiplier] then
-        real_multiplier_amplitude = multipliers[int_multiplier]
-        if real_multiplier_amplitude < 0 then
-          real_multiplier_amplitude = real_multiplier_amplitude * -1
-        end
-      else
-        real_multiplier_amplitude = 0.0
-      end
-
-      real_sum_multiplier_amplitudes =
-        real_sum_multiplier_amplitudes + (real_multiplier_amplitude * real_amplitude)
-    end
-
-    local real_amplitude_factor = real_amplitude / real_sum_multiplier_amplitudes
-
-    --renoise.app():show_status(string.format("Amplitude factor: %9f", real_amplitude_factor))
-
-    for int_multiplier = 1, int_multipliers_per_wave do
+    for _, int_multiplier in ipairs(array_int_multiplier_indexes) do
       local real_phase = real_x
-      local real_multiplier
+      local real_multiplier = array_real_frequency_multipliers[int_wave][int_multiplier]
 
-      if multipliers[int_multiplier] then
-        real_multiplier = multipliers[int_multiplier]
-      else
-        real_multiplier = 0.0
-      end
+      real_phase = math.fmod(real_phase * int_multiplier,1.0) 
 
-      if real_multiplier ~= 0.0 then
-        real_phase = math.fmod(real_phase * int_multiplier,1.0) 
-
-        real_operator_value = real_operator_value +
-          array_function_operators[array_waves[int_wave]](
-            real_amplitude * real_multiplier * real_amplitude_factor,
-            variant_parameter,
-            real_phase
-          )
-      end
+      real_operator_value = real_operator_value +
+        array_function_operators[array_waves[int_wave]](
+          real_amplitude * real_multiplier * real_amplitude_factor,
+          variant_parameter,
+          real_phase
+        )
 
     end
   else
@@ -302,6 +262,38 @@ function process_data(real_amplification,real_x)
         .sample_buffer
     end
 
+    -- compute amplitude factor and find indexes of harmonic amplitude
+    -- multipliers for this wave
+    local multipliers = array_real_frequency_multipliers[int_wave]
+
+    local real_sum_multiplier_amplitudes = 0.0
+
+    local array_int_multiplier_indexes = {}
+
+    local real_amplitude = array_real_amplitudes[int_wave]
+
+    for int_multiplier = 1, int_multipliers_per_wave do
+      local real_multiplier_amplitude
+
+      if multipliers[int_multiplier] then
+        real_multiplier_amplitude = multipliers[int_multiplier]
+        if real_multiplier_amplitude < 0 then
+          real_multiplier_amplitude = real_multiplier_amplitude * -1
+        end
+      else
+        real_multiplier_amplitude = 0.0
+      end
+
+      real_sum_multiplier_amplitudes =
+        real_sum_multiplier_amplitudes + (real_multiplier_amplitude * real_amplitude)
+
+      if real_multiplier_amplitude ~= 0.0 then
+        table.insert(array_int_multiplier_indexes, int_multiplier)
+      end
+    end
+
+    local real_amplitude_factor = real_amplitude / real_sum_multiplier_amplitudes
+  
   
     if 
       wave_is_set(int_wave) and 
@@ -323,7 +315,7 @@ function process_data(real_amplification,real_x)
           int_count = int_count + 1
           local int_wave = array_modulators[int_modulator]
           array_real_modulators[int_count] = 
-        array_real_amplitudes[int_wave] * operate(int_wave,real_x)
+        array_real_amplitudes[int_wave] * operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_indexes)
           
         end
 
@@ -336,7 +328,7 @@ function process_data(real_amplification,real_x)
 
       end
     
-      local real_operator_value = operate(int_wave,real_x)
+      local real_operator_value = operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_indexes)
         
       real_frame_value = real_frame_value + 
       real_operator_value * (1 + real_modulator)
@@ -393,7 +385,7 @@ function generate()
     renoise.song():undo()
     return
   end
-  
+
   local int_chan,int_frame,real_frame_value,int_valid_waves
   for int_chan = 1, SAMPLE_CHANS do
     for int_frame = 1, buffer_new.number_of_frames do
