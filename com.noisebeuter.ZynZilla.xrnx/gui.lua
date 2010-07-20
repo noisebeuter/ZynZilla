@@ -130,6 +130,9 @@ function change_tab(int_operator_number)
   
   show_operator_parameters(int_wave_type)
 
+  vb.views.harmonicsHeadline.text =
+    "Harmonics and phases for Operator " .. tostring(int_operator_selected)
+
   update_multipliers_sliders()
 
   vb.views.cmbModulate.items = generate_modulator_matrix()
@@ -544,6 +547,7 @@ local function create_multipliers_gui()
     margin = MARGIN_DEFAULT,
     vb:row {
       vb:text {
+        id = "harmonicsHeadline",
         width = 532,
         font = "bold",
         text = "Harmonics and phases"
