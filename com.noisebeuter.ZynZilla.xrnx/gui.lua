@@ -57,7 +57,9 @@ dialog = nil
 function show_operator_parameters(int_wave_type)
 
   vb.views.rowWidth.visible = 
-    int_wave_type == WAVE_PULSE or int_wave_type == WAVE_TANGENT
+    int_wave_type == WAVE_PULSE or int_wave_type == WAVE_TANGENT or
+    int_wave_type == WAVE_GAUSS or int_wave_type == WAVE_DIODE or
+    int_wave_type == WAVE_CHIRP or int_wave_type == WAVE_CHEBYSHEV
   vb.views.colWaveTable.visible = int_wave_type == WAVE_WAVETABLE
   vb.views.rowInvert.visible = int_wave_type ~= WAVE_NOISE
   vb.views.rowMultiplier.visible = int_wave_type ~= WAVE_NOISE

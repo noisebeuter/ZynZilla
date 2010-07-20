@@ -24,6 +24,11 @@ WAVE_TRIANGLE = WAVE_TANGENT + 1
 WAVE_WAVETABLE = WAVE_TRIANGLE + 1
 WAVE_NUMBER = WAVE_WAVETABLE
 
+WAVE_GAUSS = WAVE_WAVETABLE + 1
+WAVE_DIODE = WAVE_GAUSS + 1
+WAVE_CHIRP = WAVE_DIODE + 1
+WAVE_CHEBYSHEV = WAVE_CHIRP + 1
+
 EPSILON = 1e-12
 MINUSINFDB = -200.0
 
@@ -67,7 +72,11 @@ array_string_operators =
   "Square", 
   "Tangent",
   "Triangle", 
-  "Wave"
+  "Wave",
+  "Gauss",
+  "Diode",
+  "Chirp",
+  "Chebyshev"
 }
   
 array_function_operators = 
@@ -83,7 +92,11 @@ array_function_operators =
   square,
   tangent,
   triangle,
-  wave
+  wave,
+  gauss,
+  diode,
+  chirp,
+  chebyshev
 }
   
 array_real_amplitudes = {}

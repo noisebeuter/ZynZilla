@@ -104,3 +104,70 @@ function none(real_unused1, real_unused2, real_unused3)
   return 0
 end
 
+
+--------------------------------------------------------------------------------
+
+function square(real_amplification, real_unused, real_x)
+  return pulse(real_amplification, 0.5, real_x)
+end
+
+
+--------------------------------------------------------------------------------
+
+function gauss(real_amplification, real_width, real_x)
+  --return exp(-x * x * (exp(a * 8) + 5.0)) * 2.0 - 1.0;
+  --return real_amplification * math.sin(TWOPI*real_x)
+  local x = real_x * 2 - 1
+  local a = (real_width - 0.5) * -1
+  renoise.app():show_status(string.format("Amp: %09f", a))
+  if a < 0.00001 then
+    a = 0.00001
+  end
+  return real_amplification * (math.exp( (-1*x) * x * (math.exp(a * 8) + 5)) * 2 - 1)
+end
+
+
+--------------------------------------------------------------------------------
+
+function diode(real_amplification, real_width, real_x)
+  local a = (real_width - 0.5) * -1
+  if a < 0.00001 then
+    a = 0.00001
+  else
+    if a > 0.99999 then
+      a = 0.99999
+    end
+  end
+  a = a * 2 - 1
+  local x = math.cos((real_x + 0.5) * 2 * PI) - a
+  if x < 0 then
+    x = 0
+  end
+  return real_amplification * (x / (1 - a) * 2 - 1)
+end
+
+
+--------------------------------------------------------------------------------
+
+function chirp(real_amplification, real_width, real_x)
+  local x = real_x * TWOPI
+  local a = real_width * 4
+  if a < 0 then
+    a = a * 2
+  end
+  a = a * a * a
+  return real_amplification * (math.sin(x/2) * math.sin(a * x * x))
+end
+
+
+--------------------------------------------------------------------------------
+
+function chebyshev(real_amplification, real_width, real_x)
+  local a = real_width
+  renoise.app():show_status(string.format("A: %9f", a))
+  a = a * a * a * 30 + 1
+  return real_amplification * (math.cos(math.acos(real_x * 2 - 1) * a))
+end
+
+
+--------------------------------------------------------------------------------
