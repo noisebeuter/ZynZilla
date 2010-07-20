@@ -495,6 +495,7 @@ local function create_multipliers_gui()
     vb:row {
       vb:text {
         width = 552,
+        font = "bold",
         text = "Harmonics"
       },
       vb:text { text = "Page: " },
@@ -512,7 +513,6 @@ local function create_operator_gui()
     id = "txtOperator",
     text = "Operator",
     font = "bold",
-    align = "center",
     width = CONTENT_WIDTH,
   }
 
