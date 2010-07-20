@@ -287,7 +287,7 @@ function reset_gui()
   int_note = 58
   real_amplification = 1.0
   int_operator_selected = 1
-  int_wave_type_selected = 5
+  int_wave_type_selected = WAVE_SINE
   vb.views.switchTabs.value = 1
   vb.views.chkInvert.value = false
 
@@ -472,7 +472,7 @@ local function create_multipliers_gui()
         end
         array_real_frequency_multipliers[int_operator_selected][idx] = new_value
         renoise.app():show_status(
-          "Harmonic #" .. tostring(int_multiplier) ..
+          "Harmonic #" .. tostring(idx) ..
           " value: " .. string.format("%1.2f", new_value)
         )
       end

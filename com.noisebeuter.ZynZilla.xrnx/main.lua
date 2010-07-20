@@ -33,7 +33,7 @@ MINUSINFDB = -200.0
 
 real_amplification = 1.0
 int_note = 58 --A-4
-int_wave_type_selected = 5 --Sine
+int_wave_type_selected = WAVE_SINE
 int_operator_selected = 1
 int_frames = 0
 real_cycles = 1
