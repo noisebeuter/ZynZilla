@@ -316,42 +316,7 @@ end
 
 --------------------------------------------------------------------------------
 
--- This function calls operate for each used operator/modulator. It sorts out
--- the type of the oscillator (operator or modulator, oscil or wavetable), calls
--- operate for each operator and modulator of the particular operator and
--- computes the end value. It also finds every harmonic with an amplitude !=0 and
--- !=nil and assembles an array with the indexes of these harmonics.
---
--- PARAMETERS
--- ----------
--- real_amplification - the global amplification of this operator
--- real_x             - the current x position
-
-function process_data(real_amplification,real_x)
-
-  local int_waves = table.getn(array_waves)
-  local int_wave
-  local int_valid_waves = 0
-  local real_frame_value = 0
-  
-  for int_wave = 1, int_waves do
-  
-    -- check if the operator is of type wavetable and has a valid
-    -- instrument and sample set
-    if array_real_harmonics_amplitudes[int_wave] and
-      array_waves[int_wave] == WAVE_WAVETABLE and 
-      array_instrument_number[int_wave] > 0 and 
-      array_sample_number[int_wave] > 0 
-    then
-      -- for WAVE mode, get the latest sample buffer and use it as
-      -- the parameter for the basefunc
-      array_variant_parameters[int_wave] = 
-        renoise.song().instruments[array_instrument_number[int_wave]]
-        .samples[array_sample_number[int_wave]]
-          .sample_buffer
-    end
-
-
+function prepare_harmonics_and_phase_shifts(int_wave) 
     -- next, compute amplitude factor and find indexes of used harmonic
     -- amplitude multipliers
     
@@ -402,6 +367,61 @@ function process_data(real_amplification,real_x)
       end
     end
 
+    return {
+      array_int_harmonic_indexes = array_int_harmonic_indexes,
+      real_sum_harmonic_amplitudes = real_sum_harmonic_amplitudes
+    }
+end
+
+
+--------------------------------------------------------------------------------
+
+-- This function calls operate for each used operator/modulator. It sorts out
+-- the type of the oscillator (operator or modulator, oscil or wavetable), calls
+-- operate for each operator and modulator of the particular operator and
+-- computes the end value. It also finds every harmonic with an amplitude !=0 and
+-- !=nil and assembles an array with the indexes of these harmonics.
+--
+-- PARAMETERS
+-- ----------
+-- real_amplification - the global amplification of this operator
+-- real_x             - the current x position
+
+function process_data(real_amplification,real_x)
+
+  local int_waves = table.getn(array_waves)
+  local int_wave
+  local int_valid_waves = 0
+  local real_frame_value = 0
+  
+  for int_wave = 1, int_waves do
+  
+    -- check if the operator is of type wavetable and has a valid
+    -- instrument and sample set
+    if array_real_harmonics_amplitudes[int_wave] and
+      array_waves[int_wave] == WAVE_WAVETABLE and 
+      array_instrument_number[int_wave] > 0 and 
+      array_sample_number[int_wave] > 0 
+    then
+      -- for WAVE mode, get the latest sample buffer and use it as
+      -- the parameter for the basefunc
+      array_variant_parameters[int_wave] = 
+        renoise.song().instruments[array_instrument_number[int_wave]]
+        .samples[array_sample_number[int_wave]]
+          .sample_buffer
+    end
+
+    local hash_harmonic_indexes_and_amplitude_sum =
+      prepare_harmonics_and_phase_shifts(int_wave)
+
+    local real_sum_harmonic_amplitudes =
+      hash_harmonic_indexes_and_amplitude_sum.real_sum_harmonic_amplitudes
+
+    local array_int_harmonic_indexes =
+      hash_harmonic_indexes_and_amplitude_sum.array_int_harmonic_indexes
+
+    local real_amplitude = array_real_amplitudes[int_wave]
+
     -- this is the value that the overall amplitude
     -- (real_amplitude*harmonic_amplitude_multiplier) will get multiplied with
     -- in operate() (its smaller than or equal to 1) to reduce the overall
@@ -432,10 +452,22 @@ function process_data(real_amplification,real_x)
           -- find the "oscillator" for this waveform
           local int_wave = array_modulators[int_modulator]
 
+
+          -- call prepare_harmonics_and_phase_shifts to make sure that all the
+          -- relevant entries of array_real_harmonics_amplitudes and
+          -- array_real_phase_shift are set
+          local hash_harmonic_indexes_and_amplitude_sum_for_modulator =
+            prepare_harmonics_and_phase_shifts(int_wave)
+
           -- compute the actual amplitude at this point by multiplying the value of operate() with
           -- the global amplitude of the operator this modulator modulates
           array_real_modulators[int_count] = 
-            array_real_amplitudes[int_wave] * operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
+            array_real_amplitudes[int_wave] * operate(
+              int_wave,
+              real_x,
+              real_amplitude_factor,
+              hash_harmonic_indexes_and_amplitude_sum_for_modulator.array_int_harmonic_indexes
+            )
           
         end
 
