@@ -107,12 +107,12 @@ array_int_modulators = {}
 array_real_harmonics_amplitudes = {}
 array_real_phase_shift = {}
 array_waves = {}
-array_minislider_multipliers = {}
+array_minislider_harmonics = {}
 array_minislider_phase_shift = {}
 
-int_multipliers_per_wave = 256
-int_multipliers_per_tab = 64
-int_multipliers_tab = 1
+int_harmonics_per_wave = 256
+int_harmonics_per_tab = 64
+int_harmonics_tab = 1
 
 
 --------------------------------------------------------------------------------
@@ -217,25 +217,25 @@ end
 
 --------------------------------------------------------------------------------
 
-function operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_indexes)
+function operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
 
   local real_amplitude = array_real_amplitudes[int_wave]
   local variant_parameter = array_variant_parameters[int_wave]
 
   local real_operator_value = 0
   if array_waves[int_wave] then  
-    local multipliers = array_real_harmonics_amplitudes[int_wave]
+    local harmonics = array_real_harmonics_amplitudes[int_wave]
 
-    for _, int_multiplier in ipairs(array_int_multiplier_indexes) do
-      local real_phase_shift = array_real_phase_shift[int_wave][int_multiplier]
+    for _, int_harmonic in ipairs(array_int_harmonic_indexes) do
+      local real_phase_shift = array_real_phase_shift[int_wave][int_harmonic]
       local real_phase = real_x + real_phase_shift
-      local real_multiplier = array_real_harmonics_amplitudes[int_wave][int_multiplier]
+      local real_harmonic = array_real_harmonics_amplitudes[int_wave][int_harmonic]
 
-      real_phase = math.fmod(real_phase * int_multiplier,1.0) 
+      real_phase = math.fmod(real_phase * int_harmonic,1.0) 
 
       real_operator_value = real_operator_value +
         array_function_operators[array_waves[int_wave]](
-          real_amplitude * real_multiplier * real_amplitude_factor,
+          real_amplitude * real_harmonic * real_amplitude_factor,
           variant_parameter,
           real_phase
         )
@@ -278,39 +278,39 @@ function process_data(real_amplification,real_x)
     end
 
     -- compute amplitude factor and find indexes of harmonic amplitude
-    -- multipliers for this wave
-    local multipliers = array_real_harmonics_amplitudes[int_wave]
+    -- harmonics for this wave
+    local harmonics = array_real_harmonics_amplitudes[int_wave]
 
-    local real_sum_multiplier_amplitudes = 0.0
+    local real_sum_harmonic_amplitudes = 0.0
 
-    local array_int_multiplier_indexes = {}
+    local array_int_harmonic_indexes = {}
 
     local real_amplitude = array_real_amplitudes[int_wave]
 
-    for int_multiplier = 1, int_multipliers_per_wave do
-      local real_multiplier_amplitude
+    for int_harmonic = 1, int_harmonics_per_wave do
+      local real_harmonic_amplitude
 
-      if multipliers[int_multiplier] then
-        real_multiplier_amplitude = multipliers[int_multiplier]
-        if real_multiplier_amplitude < 0 then
-          real_multiplier_amplitude = real_multiplier_amplitude * -1
+      if harmonics[int_harmonic] then
+        real_harmonic_amplitude = harmonics[int_harmonic]
+        if real_harmonic_amplitude < 0 then
+          real_harmonic_amplitude = real_harmonic_amplitude * -1
         end
       else
-        real_multiplier_amplitude = 0.0
+        real_harmonic_amplitude = 0.0
       end
 
-      real_sum_multiplier_amplitudes =
-        real_sum_multiplier_amplitudes + (real_multiplier_amplitude * real_amplitude)
+      real_sum_harmonic_amplitudes =
+        real_sum_harmonic_amplitudes + (real_harmonic_amplitude * real_amplitude)
 
-      if real_multiplier_amplitude ~= 0.0 then
-        table.insert(array_int_multiplier_indexes, int_multiplier)
-        if array_real_phase_shift[int_wave][int_multiplier] == nil then
-          array_real_phase_shift[int_wave][int_multiplier] = 0
+      if real_harmonic_amplitude ~= 0.0 then
+        table.insert(array_int_harmonic_indexes, int_harmonic)
+        if array_real_phase_shift[int_wave][int_harmonic] == nil then
+          array_real_phase_shift[int_wave][int_harmonic] = 0
         end
       end
     end
 
-    local real_amplitude_factor = real_amplitude / real_sum_multiplier_amplitudes
+    local real_amplitude_factor = real_amplitude / real_sum_harmonic_amplitudes
   
   
     if 
@@ -333,7 +333,7 @@ function process_data(real_amplification,real_x)
           int_count = int_count + 1
           local int_wave = array_modulators[int_modulator]
           array_real_modulators[int_count] = 
-        array_real_amplitudes[int_wave] * operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_indexes)
+        array_real_amplitudes[int_wave] * operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
           
         end
 
@@ -346,7 +346,7 @@ function process_data(real_amplification,real_x)
 
       end
     
-      local real_operator_value = operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_indexes)
+      local real_operator_value = operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
         
       real_frame_value = real_frame_value + 
       real_operator_value * (1 + real_modulator)

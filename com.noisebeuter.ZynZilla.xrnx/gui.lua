@@ -69,16 +69,16 @@ end
 
 --------------------------------------------------------------------------------
 
-local function update_multipliers_sliders()
-  for int_multiplier = 1, int_multipliers_per_tab do
-    local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
-    local real_multiplier = array_real_harmonics_amplitudes[int_operator_selected][idx]
-    if real_multiplier == nil then
-      real_multiplier = 0.0
+local function update_harmonics_sliders()
+  for int_harmonic = 1, int_harmonics_per_tab do
+    local idx = int_harmonics_per_tab * (int_harmonics_tab-1) + int_harmonic
+    local real_harmonic = array_real_harmonics_amplitudes[int_operator_selected][idx]
+    if real_harmonic == nil then
+      real_harmonic = 0.0
     end
 
-    array_minislider_multipliers[int_multiplier].tooltip = string.format("%03i", idx)
-    array_minislider_multipliers[int_multiplier].value = real_multiplier
+    array_minislider_harmonics[int_harmonic].tooltip = string.format("%03i", idx)
+    array_minislider_harmonics[int_harmonic].value = real_harmonic
 
     local phase_shifts = array_real_phase_shift[int_operator_selected]
     local real_phase_shift = phase_shifts[idx]
@@ -86,10 +86,10 @@ local function update_multipliers_sliders()
       real_phase_shift = 0
     end
 
-    array_minislider_phase_shift[int_multiplier].tooltip =
+    array_minislider_phase_shift[int_harmonic].tooltip =
       string.format("Phase shift for %03i", idx)
 
-    array_minislider_phase_shift[int_multiplier].value = real_phase_shift
+    array_minislider_phase_shift[int_harmonic].value = real_phase_shift
   end
 end
 
@@ -135,7 +135,7 @@ function change_tab(int_operator_number)
   vb.views.harmonicsHeadline.text =
     "Harmonics and phases for Operator " .. tostring(int_operator_selected)
 
-  update_multipliers_sliders()
+  update_harmonics_sliders()
 
   vb.views.cmbModulate.items = generate_modulator_matrix()
   if array_int_modulators[int_operator_number] then
@@ -308,9 +308,9 @@ function reset_gui()
   vb.views.switchTabs.value = 1
   vb.views.chkInvert.value = false
 
-  for int_multiplier = 1, int_multipliers_per_tab do
-    array_minislider_multipliers[int_multiplier].value = 0.0
-    array_minislider_phase_shift[int_multiplier].value = 0.0
+  for int_harmonic = 1, int_harmonics_per_tab do
+    array_minislider_harmonics[int_harmonic].value = 0.0
+    array_minislider_phase_shift[int_harmonic].value = 0.0
   end
 
   change_wave(1,WAVE_SINE)
@@ -447,25 +447,25 @@ end
 
 --------------------------------------------------------------------------------
 
-local function change_multipliers_tab(int_index_new)
-  int_multipliers_tab = int_index_new
-  update_multipliers_sliders()
+local function change_harmonics_tab(int_index_new)
+  int_harmonics_tab = int_index_new
+  update_harmonics_sliders()
 end
 
-local function create_multipliers_gui()
-  local row_frequency_multipliers = vb:row {
+local function create_harmonics_gui()
+  local row_frequency_harmonics = vb:row {
     id = "rowFrequencyMultipliers"
   }
 
   local default_value = 0.0
 
-  local int_tabs = math.ceil(int_multipliers_per_wave / int_multipliers_per_tab)
+  local int_tabs = math.ceil(int_harmonics_per_wave / int_harmonics_per_tab)
 
   local array_string_buttons = {}
 
   for int_tabnum = 1, int_tabs do
-    local end_harmonic = int_tabnum * int_multipliers_per_tab
-    local start_harmonic = end_harmonic - int_multipliers_per_tab + 1
+    local end_harmonic = int_tabnum * int_harmonics_per_tab
+    local start_harmonic = end_harmonic - int_harmonics_per_tab + 1
     array_string_buttons[int_tabnum] =
       tostring(start_harmonic) .. "-" .. tostring(end_harmonic)
   end
@@ -474,11 +474,11 @@ local function create_multipliers_gui()
     width = CONTENT_WIDTH + 20,
     items = array_string_buttons,
     notifier = function(int_index_new)
-      change_multipliers_tab(int_index_new)
+      change_harmonics_tab(int_index_new)
     end
   }
 
-  for int_multiplier = 1, int_multipliers_per_tab do
+  for int_harmonic = 1, int_harmonics_per_tab do
     local minislider
     local button_reset_amplitude = vb:button {
       width = 12,
@@ -494,9 +494,9 @@ local function create_multipliers_gui()
       value = default_value,
       min = -1.0,
       max = 1.0,
-      tooltip = string.format("%02i", int_multiplier),
+      tooltip = string.format("%02i", int_harmonic),
       notifier = function(new_value)
-        local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
+        local idx = int_harmonics_per_tab * (int_harmonics_tab-1) + int_harmonic
         if array_real_harmonics_amplitudes[int_operator_selected] == nil then
           array_real_harmonics_amplitudes[int_operator_selected] = {}
         end
@@ -512,7 +512,7 @@ local function create_multipliers_gui()
         end
       end
     }
-    array_minislider_multipliers[int_multiplier] = minislider
+    array_minislider_harmonics[int_harmonic] = minislider
 
     local minislider_phase_shift; 
     local button_reset_phase_shift = vb:button {
@@ -530,7 +530,7 @@ local function create_multipliers_gui()
       min = -0.5,
       max = 0.5,
       notifier = function(new_value)
-        local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
+        local idx = int_harmonics_per_tab * (int_harmonics_tab-1) + int_harmonic
         if array_real_phase_shift[int_operator_selected] == nil then
           array_real_phase_shift[int_operator_selected] = {}
         end
@@ -546,9 +546,9 @@ local function create_multipliers_gui()
         end
       end
     }
-    array_minislider_phase_shift[int_multiplier] = minislider_phase_shift
+    array_minislider_phase_shift[int_harmonic] = minislider_phase_shift
 
-    row_frequency_multipliers:add_child(vb:column {
+    row_frequency_harmonics:add_child(vb:column {
       vb:row { minislider },
       vb:row {
         button_reset_amplitude
@@ -571,7 +571,7 @@ local function create_multipliers_gui()
       vb:text { text = "Page: " },
       tab_switch
     },
-    row_frequency_multipliers
+    row_frequency_harmonics
   }
 end
 
@@ -785,7 +785,7 @@ local function create_operator_gui()
     dropdown_samples
   }
 
-  local row_frequency_multiplier = vb:row {
+  local row_frequency_harmonic = vb:row {
     id = "rowMultiplier",
     vb:text {
       text = "Freq. Multiplier",
@@ -820,7 +820,7 @@ local function create_operator_gui()
       vb:column {
         row_amplitude,
         row_invert,
-        --create_multipliers_gui(),
+        --create_harmonics_gui(),
       },
       vb:column {
         row_width,
@@ -881,7 +881,7 @@ end
       }
     },
     vb:row {
-      create_multipliers_gui()
+      create_harmonics_gui()
     }
   }
 
