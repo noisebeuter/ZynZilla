@@ -98,20 +98,43 @@ array_function_operators =
   wave
 }
   
+-- maximum amplitude per operator
 array_real_amplitudes = {}
+
+-- base function parameter per operator
 array_variant_parameters = {}
+
 array_instrument_number = {} -- to be used with WAVE operator
 array_sample_number = {} -- to be used with WAVE operator
+
+-- should the operator be inverted?
 array_boolean_inverts = {}
+
+-- modulators per operator
 array_int_modulators = {}
+
+-- amplitudes of the harmonics (int_harmonics_per_wave) per operator
 array_real_harmonics_amplitudes = {}
+
+-- phase shift values for each harmonic per operator
 array_real_phase_shift = {}
+
+-- wave types per operator
 array_waves = {}
+
+-- holds references to the harmonics sliders (int_harmonics_per_tab)
 array_minislider_harmonics = {}
+
+-- holds references to the phase shift sliders (int_harmonics_per_tab)
 array_minislider_phase_shift = {}
 
+-- the total number of harmonics per wave
 int_harmonics_per_wave = 256
+
+-- how many harmonics should be displayed per tab or "page"
 int_harmonics_per_tab = 64
+
+-- the currently active harmonics tab
 int_harmonics_tab = 1
 
 
@@ -173,6 +196,7 @@ end
 
 --------------------------------------------------------------------------------
 
+-- initialize globals for an operator when it's tab is opened for the first time
 function initialize_wave(int_wave_number)
   array_waves[int_wave_number] = WAVE_NONE
   array_real_amplitudes[int_wave_number] = 1
@@ -188,6 +212,8 @@ end
 
 --------------------------------------------------------------------------------
 
+-- check if a certain operator is modulated by other operators (modulators, in
+-- this case)
 function is_modulated(int_operator)
 
   local int_count
@@ -217,6 +243,19 @@ end
 
 --------------------------------------------------------------------------------
 
+-- compute the y value of an operator at the given x position
+--
+-- PARAMETERS
+-- ----------
+--   int_wave                   - the index of the operator
+--   real_x                     - current x position
+--   real_amplitude_factor      - the factor by which the amplitude should be
+--                                multiplied (used to automatically reduce the
+--                                overall amplitude relative to the number and
+--                                amplitudes of harmonics, to prevent clipping)
+--   array_int_harmonic_indexes - the indexes of the harmonics in
+--                                array_real_harmonics_amplitudes with an
+--                                amplitude <> 0; only those get computed
 function operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
 
   local real_amplitude = array_real_amplitudes[int_wave]
@@ -224,19 +263,39 @@ function operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexe
 
   local real_operator_value = 0
   if array_waves[int_wave] then  
+
+    -- create a local shortcut for the harmonics array of this operator
     local harmonics = array_real_harmonics_amplitudes[int_wave]
 
+    -- iterate over each harmonic with an amplitude <> 0
     for _, int_harmonic in ipairs(array_int_harmonic_indexes) do
-      local real_phase_shift = array_real_phase_shift[int_wave][int_harmonic]
-      local real_phase = real_x + real_phase_shift
-      local real_harmonic = array_real_harmonics_amplitudes[int_wave][int_harmonic]
 
+      -- get phase shift for this particular harmonic of the current operator
+      local real_phase_shift = array_real_phase_shift[int_wave][int_harmonic]
+
+      -- compute the phase, taking phase shift into account
+      local real_phase = real_x + real_phase_shift
+
+      -- get the amplitude multiplier of this harmonic
+      local real_harmonic = harmonics[int_harmonic]
+
+      -- compute the x value for the operator basefunc
       real_phase = math.fmod(real_phase * int_harmonic,1.0) 
 
+      -- add the value of this overtone to the operator value at this x position
       real_operator_value = real_operator_value +
         array_function_operators[array_waves[int_wave]](
+
+          -- compute the desired amplitde by multiplying the global amplitude
+          -- of this operator with the amplitude multiplier of this harmonic and
+          -- the overall amplitude reduction multiplier
           real_amplitude * real_harmonic * real_amplitude_factor,
+
+          -- this is called "width" in the ui and gets used differently by each
+          -- basefunc
           variant_parameter,
+
+          -- x position
           real_phase
         )
 
@@ -245,6 +304,7 @@ function operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexe
     real_operator_value = 0
   end
 
+  -- invert the wave if the checkbox was selected
   if array_boolean_inverts[int_wave] then 
     real_operator_value = -1 * real_operator_value 
   end
@@ -256,6 +316,17 @@ end
 
 --------------------------------------------------------------------------------
 
+-- This function calls operate for each used operator/modulator. It sorts out
+-- the type of the oscillator (operator or modulator, oscil or wavetable), calls
+-- operate for each operator and modulator of the particular operator and
+-- computes the end value. It also finds every harmonic with an amplitude !=0 and
+-- !=nil and assembles an array with the indexes of these harmonics.
+--
+-- PARAMETERS
+-- ----------
+-- real_amplification - the global amplification of this operator
+-- real_x             - the current x position
+
 function process_data(real_amplification,real_x)
 
   local int_waves = table.getn(array_waves)
@@ -265,54 +336,80 @@ function process_data(real_amplification,real_x)
   
   for int_wave = 1, int_waves do
   
-    if 
+    -- check if the operator is of type wavetable and has a valid
+    -- instrument and sample set
+    if array_real_harmonics_amplitudes[int_wave] and
       array_waves[int_wave] == WAVE_WAVETABLE and 
       array_instrument_number[int_wave] > 0 and 
       array_sample_number[int_wave] > 0 
     then
-      -- for WAVE mode, get the latest sample buffer
+      -- for WAVE mode, get the latest sample buffer and use it as
+      -- the parameter for the basefunc
       array_variant_parameters[int_wave] = 
-      renoise.song().instruments[array_instrument_number[int_wave]]
-      .samples[array_sample_number[int_wave]]
-        .sample_buffer
+        renoise.song().instruments[array_instrument_number[int_wave]]
+        .samples[array_sample_number[int_wave]]
+          .sample_buffer
     end
 
-    -- compute amplitude factor and find indexes of harmonic amplitude
-    -- harmonics for this wave
+
+    -- next, compute amplitude factor and find indexes of used harmonic
+    -- amplitude multipliers
+    
+    -- alias the amplitude multipliers for the harmonics of this wave
     local harmonics = array_real_harmonics_amplitudes[int_wave]
 
+    -- the sum of all harmonic amplitude multipliers
     local real_sum_harmonic_amplitudes = 0.0
 
+    -- indexes of all used harmonics
     local array_int_harmonic_indexes = {}
 
+    -- global amplification for this wave
     local real_amplitude = array_real_amplitudes[int_wave]
 
+    -- compute the sum of all harmonic amplitude multipliers
     for int_harmonic = 1, int_harmonics_per_wave do
+
       local real_harmonic_amplitude
 
+      -- check if the amplitude multiplier of this harmonic is nil
       if harmonics[int_harmonic] then
+        -- ...if not, assign the value
         real_harmonic_amplitude = harmonics[int_harmonic]
+        -- if it's negative, invert it (because we want the sum)
         if real_harmonic_amplitude < 0 then
           real_harmonic_amplitude = real_harmonic_amplitude * -1
         end
       else
+        -- ...if it's nil, set it to zero for the sake of performing
+        -- arithmetic operations (summing)
         real_harmonic_amplitude = 0.0
       end
 
+      -- take the sum
       real_sum_harmonic_amplitudes =
         real_sum_harmonic_amplitudes + (real_harmonic_amplitude * real_amplitude)
 
+      -- if the amplitude multiplier is not zero
       if real_harmonic_amplitude ~= 0.0 then
+        -- insert the index into the array for operate
         table.insert(array_int_harmonic_indexes, int_harmonic)
+        -- check if the corresponding phase shift to this harmonic is nil
         if array_real_phase_shift[int_wave][int_harmonic] == nil then
+          -- if yes, set it to zero to prevent an error in operate()
           array_real_phase_shift[int_wave][int_harmonic] = 0
         end
       end
     end
 
+    -- this is the value that the overall amplitude
+    -- (real_amplitude*harmonic_amplitude_multiplier) will get multiplied with
+    -- in operate() (its smaller than or equal to 1) to reduce the overall
+    -- amplitude and prevent clipping when more than one harmonic is set
     local real_amplitude_factor = real_amplitude / real_sum_harmonic_amplitudes
   
   
+    -- check if this oscillator is an operator
     if 
       wave_is_set(int_wave) and 
       array_waves[int_wave] > 0 and 
@@ -331,35 +428,49 @@ function process_data(real_amplification,real_x)
         for int_modulator = 1, int_modulators do
    
           int_count = int_count + 1
+          
+          -- find the "oscillator" for this waveform
           local int_wave = array_modulators[int_modulator]
+
+          -- compute the actual amplitude at this point by multiplying the value of operate() with
+          -- the global amplitude of the operator this modulator modulates
           array_real_modulators[int_count] = 
-        array_real_amplitudes[int_wave] * operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
+            array_real_amplitudes[int_wave] * operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
           
         end
 
+        -- sum all modulator amplitudes for this frame
         for int_modulator = 1, int_modulators do
           real_modulator = real_modulator + 
             array_real_modulators[int_modulator]
         end
         
+        -- reduce the amplitude to prevent clipping if more than one modulator is used
         real_modulator = real_modulator / int_modulators
 
       end
     
+      -- compute the value of this operator at this frame
       local real_operator_value = operate(int_wave,real_x,real_amplitude_factor,array_int_harmonic_indexes)
-        
+
+      -- compute the value for this frame by summing all operators and
+      -- multiplying the value of the operator with the sum of the modulators
+      -- (aka FM)
+      -- TODO add more modulation types besides FM
       real_frame_value = real_frame_value + 
-      real_operator_value * (1 + real_modulator)
-        
+        real_operator_value * (1 + real_modulator)
+
+      -- increase the number of computed waves
       int_valid_waves = int_valid_waves + 1
             
     end
   
   end
   
+  -- amplify the frame value
   if int_valid_waves > 0 then
     real_frame_value = real_amplification * 
-    real_frame_value / int_valid_waves
+      real_frame_value / int_valid_waves
   end
   
   return real_frame_value, int_valid_waves
@@ -368,6 +479,10 @@ end
 
 
 --------------------------------------------------------------------------------
+
+-- This function is called when the user presses the "Generate" button. It is
+-- responsible for creating the sample and calling process_data() for each
+-- sample. 
 
 function generate()
 
