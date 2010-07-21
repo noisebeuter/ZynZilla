@@ -72,7 +72,7 @@ end
 local function update_multipliers_sliders()
   for int_multiplier = 1, int_multipliers_per_tab do
     local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
-    local real_multiplier = array_real_frequency_multipliers[int_operator_selected][idx]
+    local real_multiplier = array_real_harmonics_amplitudes[int_operator_selected][idx]
     if real_multiplier == nil then
       real_multiplier = 0.0
     end
@@ -298,7 +298,7 @@ function reset_gui()
   array_variant_parameters = {}
   array_boolean_inverts = {}
   array_int_modulators = {}
-  array_real_frequency_multipliers = {}
+  array_real_harmonics_amplitudes = {}
   array_real_phase_shift = {}
   array_waves = {}
   int_note = 58
@@ -497,10 +497,10 @@ local function create_multipliers_gui()
       tooltip = string.format("%02i", int_multiplier),
       notifier = function(new_value)
         local idx = int_multipliers_per_tab * (int_multipliers_tab-1) + int_multiplier
-        if array_real_frequency_multipliers[int_operator_selected] == nil then
-          array_real_frequency_multipliers[int_operator_selected] = {}
+        if array_real_harmonics_amplitudes[int_operator_selected] == nil then
+          array_real_harmonics_amplitudes[int_operator_selected] = {}
         end
-        array_real_frequency_multipliers[int_operator_selected][idx] = new_value
+        array_real_harmonics_amplitudes[int_operator_selected][idx] = new_value
         renoise.app():show_status(
           "Harmonic #" .. tostring(idx) ..
           " amplitude: " .. string.format("%1.2f", new_value)
@@ -798,7 +798,7 @@ local function create_operator_gui()
       max = 10,
       value = 1,
       notifier = function(new_value)
-        array_real_frequency_multipliers[int_operator_selected] = new_value
+        array_real_harmonics_amplitudes[int_operator_selected] = new_value
       end
     }
   }

@@ -104,7 +104,7 @@ array_instrument_number = {} -- to be used with WAVE operator
 array_sample_number = {} -- to be used with WAVE operator
 array_boolean_inverts = {}
 array_int_modulators = {}
-array_real_frequency_multipliers = {}
+array_real_harmonics_amplitudes = {}
 array_real_phase_shift = {}
 array_waves = {}
 array_minislider_multipliers = {}
@@ -178,7 +178,7 @@ function initialize_wave(int_wave_number)
   array_real_amplitudes[int_wave_number] = 1
   array_variant_parameters[int_wave_number] = 0.5
   array_boolean_inverts[int_wave_number] = false
-  array_real_frequency_multipliers[int_wave_number] = {}
+  array_real_harmonics_amplitudes[int_wave_number] = {}
   array_real_phase_shift[int_wave_number] = {}
   array_int_modulators[int_wave_number] = 0
   array_instrument_number[int_wave_number] = 0
@@ -224,12 +224,12 @@ function operate(int_wave,real_x,real_amplitude_factor,array_int_multiplier_inde
 
   local real_operator_value = 0
   if array_waves[int_wave] then  
-    local multipliers = array_real_frequency_multipliers[int_wave]
+    local multipliers = array_real_harmonics_amplitudes[int_wave]
 
     for _, int_multiplier in ipairs(array_int_multiplier_indexes) do
       local real_phase_shift = array_real_phase_shift[int_wave][int_multiplier]
       local real_phase = real_x + real_phase_shift
-      local real_multiplier = array_real_frequency_multipliers[int_wave][int_multiplier]
+      local real_multiplier = array_real_harmonics_amplitudes[int_wave][int_multiplier]
 
       real_phase = math.fmod(real_phase * int_multiplier,1.0) 
 
@@ -279,7 +279,7 @@ function process_data(real_amplification,real_x)
 
     -- compute amplitude factor and find indexes of harmonic amplitude
     -- multipliers for this wave
-    local multipliers = array_real_frequency_multipliers[int_wave]
+    local multipliers = array_real_harmonics_amplitudes[int_wave]
 
     local real_sum_multiplier_amplitudes = 0.0
 
