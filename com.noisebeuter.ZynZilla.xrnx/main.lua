@@ -316,8 +316,16 @@ end
 
 --------------------------------------------------------------------------------
 
+-- Computes indexes of used harmonics, makes sure that the phase shifts of the
+-- used harmonics are set and computes the sum of the amplitude modifiers of
+-- the harmonics for the oscillator from the parameter.
+--
+-- PARAMETERS
+-- ----------
+-- int_wave - the oscillator index
+
 function prepare_harmonics_and_phase_shifts(int_wave) 
-    -- next, compute amplitude factor and find indexes of used harmonic
+    -- compute amplitude factor and find indexes of used harmonic
     -- amplitude multipliers
     
     -- alias the amplitude multipliers for the harmonics of this wave
